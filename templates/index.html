@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', (event) => {
+            console.log(document.domain)
+            console.log(location.port)
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+            socket.on('connect', function() {
+                console.log('Websocket connected!');
+            });
+
+            socket.on('message', function(msg) {
+                console.log('Received message:', msg);
+                document.getElementById('messages').innerHTML += '<li>' + msg + '</li>';
+            });
+
+            document.getElementById('sendbutton').onclick = function(){
+                var text = document.getElementById('text').value;
+                socket.send(text);
+                document.getElementById('text').value = '';
+            };
+        });
+    </script>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+    <input id="text" type="text">
+    <button id="sendbutton">Send</button>
+    <ul id="messages"></ul>
+</body>
+</html>
