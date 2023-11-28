@@ -1,47 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>WebSocket Client</title>
+    <title>WebSocket Audio Test</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
     <script type="text/javascript">
+        var socket;
+
         document.addEventListener('DOMContentLoaded', (event) => {
-            console.log(document.domain)
-            console.log(location.port)
-            var socket = io.connect('http://' + document.domain + ':' + location.port);
+            socket = io.connect('http://' + document.domain + ':' + location.port);
 
             socket.on('connect', function() {
                 console.log('Websocket connected!');
             });
 
-            socket.on('message', function(msg) {
-                console.log('Received message:', msg);
-                document.getElementById('messages').innerHTML += '<li>' + msg + '</li>';
+            socket.on('audio_response', function(msg) {
+                console.log('Received response:', msg);
             });
-
-            document.getElementById('sendbutton').onclick = function(){
-                var text = document.getElementById('text').value;
-                socket.send(text);
-                document.getElementById('text').value = '';
-            };
         });
-
-        function dragOverHandler(ev) {
-            console.log('File(s) in drop zone');
-            ev.preventDefault();
-        }
 
         function dropHandler(ev) {
             console.log('File(s) dropped');
-
             ev.preventDefault();
 
             if (ev.dataTransfer.items) {
-                // Use DataTransferItemList interface to access the file(s)
                 for (var i = 0; i < ev.dataTransfer.items.length; i++) {
                     if (ev.dataTransfer.items[i].kind === 'file') {
                         var file = ev.dataTransfer.items[i].getAsFile();
                         console.log('... file[' + i + '].name = ' + file.name);
-                        // Process the file
                         processFile(file);
                     }
                 }
@@ -51,20 +36,21 @@
         function processFile(file) {
             var reader = new FileReader();
             reader.onload = function(event) {
-                socket.emit('mp3_file', event.target.result);
+                socket.emit('audio_file', event.target.result);
             };
             reader.readAsDataURL(file);
+        }
+
+        function dragOverHandler(ev) {
+            ev.preventDefault();
         }
 
     </script>
 </head>
 <body>
-    <h1>WebSocket Test</h1>
-    <div style="background-color: rebeccapurple;" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-        <p>Drag and drop an MP3 file here</p>
+    <h1>WebSocket Audio Test</h1>
+    <div ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+        <p>Drag and drop an audio file here</p>
     </div>    
-    <!-- <input id="text" type="text">
-    <button id="sendbutton">Send</button> -->
-    <ul id="messages"></ul>
 </body>
 </html>
