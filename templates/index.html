@@ -24,12 +24,47 @@
                 document.getElementById('text').value = '';
             };
         });
+
+        function dragOverHandler(ev) {
+            console.log('File(s) in drop zone');
+            ev.preventDefault();
+        }
+
+        function dropHandler(ev) {
+            console.log('File(s) dropped');
+
+            ev.preventDefault();
+
+            if (ev.dataTransfer.items) {
+                // Use DataTransferItemList interface to access the file(s)
+                for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+                    if (ev.dataTransfer.items[i].kind === 'file') {
+                        var file = ev.dataTransfer.items[i].getAsFile();
+                        console.log('... file[' + i + '].name = ' + file.name);
+                        // Process the file
+                        processFile(file);
+                    }
+                }
+            }
+        }
+
+        function processFile(file) {
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                socket.emit('mp3_file', event.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
     </script>
 </head>
 <body>
     <h1>WebSocket Test</h1>
-    <input id="text" type="text">
-    <button id="sendbutton">Send</button>
+    <div style="background-color: rebeccapurple;" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+        <p>Drag and drop an MP3 file here</p>
+    </div>    
+    <!-- <input id="text" type="text">
+    <button id="sendbutton">Send</button> -->
     <ul id="messages"></ul>
 </body>
 </html>
