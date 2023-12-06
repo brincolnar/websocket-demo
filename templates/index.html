@@ -16,6 +16,43 @@
             socket.on('audio_response', function(msg) {
                 console.log('Received response:', msg);
             });
+
+            // Voice recording setup
+            let mediaRecorder;
+            let audioChunks = [];
+
+            // Get recording controls
+            const recordButton = document.getElementById('recordButton');
+            const recordingStatus = document.getElementById('recordingStatus');
+
+            // Event listener for the record button
+            recordButton.addEventListener('click', () => {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    recordButton.textContent = 'Start Recording';
+                    recordingStatus.textContent = 'Not Recording';
+                } else {
+                    navigator.mediaDevices.getUserMedia({ audio: true })
+                        .then(stream => {
+                            mediaRecorder = new MediaRecorder(stream);
+                            mediaRecorder.ondataavailable = e => {
+                                audioChunks.push(e.data);
+                            };
+                            mediaRecorder.onstop = e => {
+                                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                                audioChunks = [];
+                                processFile(audioBlob);
+                            };
+                            mediaRecorder.start();
+                            recordButton.textContent = 'Stop Recording';
+                            recordingStatus.textContent = 'Recording...';
+                        })
+                        .catch(err => {
+                            console.error("Error in recording: ", err);
+                        });
+                }
+            });
+
         });
 
         function dropHandler(ev) {
@@ -52,5 +89,11 @@
     <div ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
         <p>Drag and drop an audio file here</p>
     </div>    
+
+    <!-- Voice recording section -->
+    <div id="voice-recording">
+        <button id="recordButton">Start Recording</button>
+        <p id="recordingStatus">Not Recording</p>
+    </div>
 </body>
 </html>
