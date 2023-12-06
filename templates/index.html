@@ -19,6 +19,22 @@
                 console.log('Received response:', msg);
             });
 
+            socket.on('audio_file_response', function(dataUrl) {
+                // Create a new audio element
+                let audio = new Audio(dataUrl);
+                
+                // Optional: Append the audio to the DOM for user control
+                let audioContainer = document.getElementById('audioContainer'); // Assuming you have a container for the audio
+                if (audioContainer) {
+                    audioContainer.innerHTML = ''; // Clear previous audio
+                    audio.controls = true; // Add controls if you want the user to have control
+                    audioContainer.appendChild(audio);
+                }
+
+                // Play the audio
+                audio.play();
+            });
+
             // Voice recording setup
             let mediaRecorder;
             let audioChunks = [];
@@ -135,6 +151,10 @@
     <div id="voice-recording">
         <button id="recordButton">Start Recording</button>
         <p id="recordingStatus">Not Recording</p>
+    </div>
+
+    <div id="audioContainer">
+
     </div>
 </body>
 </html>
