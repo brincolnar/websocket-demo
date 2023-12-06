@@ -6,6 +6,8 @@
     <script type="text/javascript">
         var socket;
 
+
+
         document.addEventListener('DOMContentLoaded', (event) => {
             socket = io.connect('http://' + document.domain + ':' + location.port);
 
@@ -52,6 +54,45 @@
                         });
                 }
             });
+
+            let recording = false; // Track the recording state
+
+            // Modified event listener for the record button
+            recordButton.addEventListener('click', () => {
+                if (recording) {
+                    mediaRecorder.stop();
+                    recordButton.textContent = 'Start Recording';
+                    recordingStatus.textContent = 'Not Recording';
+                    recording = false;
+                    setTimeout(() => recordButton.click(), 0); // Immediately start recording again
+                } else {
+                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                        navigator.mediaDevices.getUserMedia({ audio: true })
+                            .then(stream => {
+                                mediaRecorder = new MediaRecorder(stream);
+                                mediaRecorder.ondataavailable = e => {
+                                    audioChunks.push(e.data);
+                                };
+                                mediaRecorder.onstop = e => {
+                                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                                    audioChunks = [];
+                                    processFile(audioBlob);
+                                };
+                                mediaRecorder.start();
+                                setTimeout(() => recordButton.click(), 10000); // Stop after 10 seconds
+                                recordButton.textContent = 'Stop Recording';
+                                recordingStatus.textContent = 'Recording...';
+                                recording = true;
+                            })
+                            .catch(err => {
+                                console.error("Error in recording: ", err);
+                            });
+                    }
+                }
+            });
+
+            // Start the process
+            recordButton.click();
 
         });
 

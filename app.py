@@ -38,6 +38,10 @@ def handle_audio_file(data_url):
     
     text = transcript['text']
 
+    # Remove the temporary audio file if needed
+    os.remove(file_path)
+
+
     print(f"Audio file saved as {file_path}")
     socketio.emit('audio_response', f'Audio file transcript: {text}')
 
